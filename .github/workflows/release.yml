@@ -1,0 +1,91 @@
+name: Build and Release JAR
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Java 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Create bin directory
+      run: mkdir -p bin
+    
+    - name: Compile game code
+      run: javac -d bin src/characters/*.java src/battle/*.java src/events/*.java src/game/*.java
+    
+    - name: Build JAR file
+      run: |
+        cd bin
+        jar cvfm ../OOP_game.jar ../META-INF/MANIFEST.MF characters/ battle/ events/ game/
+        cd ..
+    
+    - name: Verify JAR file
+      run: |
+        echo "✅ JAR file created successfully!"
+        ls -lh OOP_game.jar
+        echo ""
+        echo "📦 JAR contents:"
+        jar tf OOP_game.jar | head -20
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: OOP_game.jar
+        body: |
+          🎮 OOP Medieval War Game - Release
+          
+          ## 📥 How to Play
+          
+          ### Requirements
+          - Java 11 or higher installed
+          
+          ### Quick Start
+          ```bash
+          java -jar OOP_game.jar
+          ```
+          
+          ### Features
+          - ⚔️ Turn-based battle system
+          - 🎯 Multiple enemy types (Soldiers, Generals, Deserters)
+          - 🤝 NPC interactions (Mercenary, Wandering Monk)
+          - 🎪 Random events (Battlefield ruins, Surrendered enemies, Church trial)
+          - 🏆 4 different endings based on your choices
+          
+          ### Game Stats
+          - Honor (榮譽)
+          - War Points (戰功)
+          - Kill Count (擊殺數)
+          
+          ### Endings
+          1. ✨ Honorable Knight (榮譽騎士)
+          2. ⚔️ War Survivor (戰爭倖存者)
+          3. 🩸 Bloodthirsty Butcher (嗜血屠夫)
+          4. ☠️ Fallen on Battlefield (戰死沙場)
+          
+          Enjoy the game! 🗡️
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Release Summary
+      run: |
+        echo "🎉 Release Complete!"
+        echo "===================="
+        echo "✅ JAR file built successfully"
+        echo "📦 File: OOP_game.jar"
+        echo "🔗 GitHub Release URL:"
+        echo "   https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+        echo ""
+        echo "📥 Users can download and run:"
+        echo "   java -jar OOP_game.jar"
