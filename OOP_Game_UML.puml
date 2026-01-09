@@ -1,0 +1,237 @@
+@startuml OOP_Game_UML
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #F0F0F0
+skinparam classBorderColor #333333
+skinparam arrowColor #333333
+
+package "characters" {
+    abstract class Character {
+        # name: String
+        # hp: int
+        # maxHp: int
+        # atk: int
+        # def: int
+        ---
+        + Character(String, int, int, int)
+        + calculateDamage(Character): int
+        + takeDamage(int): void
+        + heal(int): void
+        + isAlive(): boolean
+        + getName(): String
+        + getHp(): int
+        + getMaxHp(): int
+        + getAtk(): int
+        + getDef(): int
+        + setHp(int): void
+    }
+
+    class Player {
+        - exp: int
+        - level: int
+        - honor: int
+        - warPoint: int
+        - killCount: int
+        ---
+        + Player(String)
+        + gainExp(int): void
+        + gainHonor(int): void
+        + gainWarPoint(int): void
+        + addKillCount(int): void
+        + restoreHealth(int): void
+        + showStatus(): void
+        + getExp(): int
+        + getLevel(): int
+        + getHonor(): int
+        + getWarPoint(): int
+        + getKillCount(): int
+    }
+
+    abstract class Enemy {
+        # expReward: int
+        # honorReward: int
+        # warPointReward: int
+        ---
+        + Enemy(String, int, int, int, int, int, int)
+        + getExpReward(): int
+        + getHonorReward(): int
+        + getWarPointReward(): int
+        + showStatus(): void
+    }
+
+    class Soldier {
+        + Soldier()
+    }
+
+    class General {
+        + General()
+    }
+
+    class Deserter {
+        + Deserter()
+    }
+
+    abstract class NPC {
+        # name: String
+        # description: String
+        ---
+        + NPC(String, String)
+        + getName(): String
+        + getDescription(): String
+        + interact(Player): void {abstract}
+    }
+
+    class Mercenary {
+        + Mercenary()
+        + interact(Player): void
+    }
+
+    class WanderingMonk {
+        + WanderingMonk()
+        + interact(Player): void
+        + heal(Player): void
+        + predictFate(Player): void
+    }
+
+    Character <|-- Player
+    Character <|-- Enemy
+    Enemy <|-- Soldier
+    Enemy <|-- General
+    Enemy <|-- Deserter
+    NPC <|-- Mercenary
+    NPC <|-- WanderingMonk
+}
+
+package "battle" {
+    class Battle {
+        - player: Player
+        - enemy: Enemy
+        - scanner: Scanner
+        - round: int
+        - lastRoundDefended: boolean
+        ---
+        + Battle(Player, Enemy)
+        + start(): boolean
+        - showBattleState(): void
+        - playerTurn(): void
+        - enemyTurn(): void
+        - attack(Character, Character): void
+        - defend(): void
+        - attemptEscape(): boolean
+        - playerVictory(): void
+        - playerDefeat(): void
+        - getInput(int, int): int
+    }
+}
+
+package "events" {
+    class EventManager {
+        - player: Player
+        - scanner: Scanner
+        ---
+        + EventManager(Player)
+        + battlefieldRuinsEvent(): void
+        + surrenderedEnemyEvent(): void
+        + churchTrialEvent(): void
+        - forceChurchBattle(): void
+        + finalBattleEvent(): void
+        + tryTriggerRandomEvent(): void
+        + checkFixedEvents(): boolean
+        - getInput(int, int): int
+    }
+}
+
+package "game" {
+    class EndingManager {
+        {static} + determineEnding(Player): Ending
+        {static} + showEnding(Ending, Player): void
+        - showHonorableKnightEnding(Player): void
+        - showWarSurvivorEnding(Player): void
+        - showBloodthirstyButcherEnding(Player): void
+        - showFallenOnBattlefieldEnding(Player): void
+        - showIncompleteEnding(Player): void
+    }
+
+    enum Ending {
+        HONORABLE_KNIGHT
+        WAR_SURVIVOR
+        BLOODTHIRSTY_BUTCHER
+        FALLEN_ON_BATTLEFIELD
+        INCOMPLETE
+    }
+
+    class Game {
+        - player: Player
+        - eventManager: EventManager
+        - scanner: Scanner
+        - random: Random
+        - gameRunning: boolean
+        - mercenary: Mercenary
+        - wanderingMonk: WanderingMonk
+        ---
+        + Game()
+        - clearScreen(): void
+        + initialize(): void
+        + start(): void
+        - goToBattle(): void
+        - generateRandomEnemy(): Enemy
+        - interactWithNPC(): void
+        - handleMonkInteraction(): void
+        - rest(): void
+        - endGame(): void
+        - getInput(int, int): int
+        {static} + main(String[]): void
+    }
+
+    EndingManager --> Ending
+}
+
+' 關係定義
+Battle --> Player
+Battle --> Enemy
+Game --> Player
+Game --> Battle
+Game --> EventManager
+Game --> Mercenary
+Game --> WanderingMonk
+Game --> EndingManager
+EventManager --> Player
+EndingManager --> Player
+
+' 註釋
+note right of Character
+  所有遊戲角色的基類
+  包含基本屬性和方法
+end note
+
+note right of Player
+  玩家角色
+  擁有等級、經驗、榮譽等進階屬性
+end note
+
+note right of Enemy
+  敵人基類
+  小兵、將領、逃兵的父類
+end note
+
+note right of NPC
+  非玩家角色基類
+  傭兵和修道士的父類
+end note
+
+note right of Battle
+  回合制戰鬥系統
+  處理攻擊、防禦、逃跑等行動
+end note
+
+note right of EventManager
+  事件管理系統
+  觸發隨機和固定事件
+end note
+
+note right of Game
+  遊戲主程序
+  控制整個遊戲流程
+end note
+
+@enduml
