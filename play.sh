@@ -16,5 +16,5 @@ echo ""
 
 sleep 1
 
-cd /Users/jackpan/development/OOP_game
+cd "$(dirname "$0")"
 java -cp bin game.Game
